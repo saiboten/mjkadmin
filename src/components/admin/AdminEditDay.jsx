@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { array } from "prop-types";
 import moment from "moment";
 import { DateHeader } from "../DateHeader";
-import SongAudio from "../days/day/SongAudio";
 import request from "superagent";
 
 import "@elastic/eui/dist/eui_theme_light.css";

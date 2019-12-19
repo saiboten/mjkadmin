@@ -2,6 +2,7 @@
   "date": "2019-12-06",
   "solutions": [
     { "id": null, "day": 195, "solution": "Test", "new": true },
+    { "id": null, "day": 195, "solution": "Test2", "new": true },
     { "id": null, "day": 210, "solution": "hjio", "new": true }
   ],
   "answers": [],
@@ -19,21 +20,6 @@
       "cooperator": "Tobias",
       "solutionArtist": "Hurra",
       "solutionSong": "Test",
-      "new": false
-    },
-    {
-      "id": 210,
-      "revealDateAsString": "2019-12-06",
-      "image": null,
-      "description": "",
-      "optionalSolutionVideo": "",
-      "link": "",
-      "solutionDate": "2019-12-06T23:00:00.000+0000",
-      "revealDate": "2019-12-05T23:00:00.000+0000",
-      "difficulty": null,
-      "cooperator": null,
-      "solutionArtist": "",
-      "solutionSong": "hjio",
       "new": false
     }
   ],

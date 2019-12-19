@@ -13,7 +13,13 @@ export function AdminDay(props) {
   }
 
   if (edit) {
-    return <AdminEditDay key={day.id} day={day} close={() => setEdit(false)} />;
+    return (
+      <AdminEditDay
+        key={day.id}
+        revealDateAsString={day.revealDateAsString}
+        close={() => setEdit(false)}
+      />
+    );
   }
 
   const done = day.description !== "" && day.optionalSolutionVideo !== "";
