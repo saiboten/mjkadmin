@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
 
 import moment from "moment";
-import { App } from "./App";
 import AdminOverview from "./components/admin/AdminOverview";
 
 moment.defineLocale("nb", {
@@ -60,10 +59,6 @@ moment.defineLocale("nb", {
 moment.locale("nb");
 
 if (document.getElementById("root")) {
-  ReactDOM.render(<App />, document.getElementById("root"));
-}
-
-if (document.getElementById("admin")) {
   ReactDOM.render(<AdminOverview />, document.getElementById("admin"));
 }
 
