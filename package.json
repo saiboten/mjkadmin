@@ -1,31 +1,22 @@
 {
-  "name": "mjkfront",
+  "name": "mjkadmin",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "5to6-codemod": "^1.8.0",
     "@elastic/datemath": "^5.0.2",
     "@elastic/eui": "^17.1.2",
     "formik": "^2.0.8",
     "moment": "^2.24.0",
-    "promise": "^7.0.4",
     "react": "^16.11.0",
-    "react-audio-player": "^0.6.4",
-    "react-confetti": "^5.0.1",
-    "react-datepicker": "^2.10.1",
     "react-dom": "^16.11.0",
-    "react-dropzone": "^3.7.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.3.0",
-    "react-spring": "^8.0.27",
-    "react-use-gesture": "^6.0.14",
-    "react-with-gesture": "^4.0.8",
     "styled-components": "^4.4.1",
     "superagent": "^5.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build postbuild",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "postbuild": "@powershell -NoProfile -ExecutionPolicy Unrestricted -Command ./post_build.ps1"

@@ -22,7 +22,6 @@ import {
   EuiText
 } from "@elastic/eui";
 
-import "react-datepicker/dist/react-datepicker.css";
 import {
   updateDay,
   deleteDay,

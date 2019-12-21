@@ -4,7 +4,6 @@
 import React from "react";
 
 import moment from "moment";
-import DatePicker from "react-datepicker";
 import { H1 } from "../lib/Heading";
 import { addDay, fetchAdminData } from "../../api/adminApi";
 
@@ -94,19 +93,19 @@ class AdminAddDay extends React.Component {
               <tr>
                 <td>Kalender åpner</td>
                 <td>
-                  <DatePicker
+                  {/* <DatePicker
                     selected={this.state.revealDate}
                     onChange={this.changeRevealDate}
-                  />
+                  /> */}
                 </td>
               </tr>
               <tr>
                 <td>Dag avsluttes</td>
                 <td>
-                  <DatePicker
+                  {/* <DatePicker
                     selected={this.state.solutionDate}
                     onChange={this.changeSolutionDate}
-                  />
+                  /> */}
                 </td>
               </tr>
               <tr>
