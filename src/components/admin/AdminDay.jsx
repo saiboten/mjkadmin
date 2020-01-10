@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { AdminEditDay } from "./AdminEditDay";
 
-import { EuiTitle, EuiHorizontalRule, EuiSpacer, EuiCode } from "@elastic/eui";
+import { EuiTitle } from "@elastic/eui";
 
 export function AdminDay(props) {
   const { day, solutions } = props;

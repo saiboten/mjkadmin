@@ -1,4 +1,17 @@
 import React, { useState, useEffect } from "react";
+
+import {
+  EuiPage,
+  EuiPageBody,
+  EuiPageContent,
+  EuiPageContentBody,
+  EuiPageContentHeader,
+  EuiPageContentHeaderSection,
+  EuiPageHeader,
+  EuiPageHeaderSection,
+  EuiTitle
+} from "@elastic/eui";
+
 import AdminAddDay from "./AdminAddDay";
 
 import { fetchAdminData } from "../../api/adminApi";
@@ -15,32 +28,43 @@ function AdminOverview() {
     });
   }, [setDays, setSolutions]);
 
-  console.log(solutions);
-
   return (
-    <div
-      style={{
-        backgroundColor: "white",
-        flexWrap: "wrap",
-        margin: "5px auto",
-        maxWidth: "980px"
-      }}
-    >
-      {days.map((day, i) => {
-        var solutionsForThisDay = solutions
-          .filter(solution => solution.day === day.id)
-          .map(el => el.solution);
+    <EuiPage>
+      <EuiPageBody>
+        <EuiPageHeader>
+          <EuiPageHeaderSection>
+            <EuiTitle size="l">
+              <h1>Page title</h1>
+            </EuiTitle>
+          </EuiPageHeaderSection>
+        </EuiPageHeader>
+        <EuiPageContent verticalPosition="center" horizontalPosition="center">
+          <EuiPageContentHeader>
+            <EuiPageContentHeaderSection>
+              <EuiTitle>
+                <h2>Dager</h2>
+              </EuiTitle>
+            </EuiPageContentHeaderSection>
+          </EuiPageContentHeader>
+          <EuiPageContentBody>
+            {days.map((day, i) => {
+              var solutionsForThisDay = solutions
+                .filter(solution => solution.day === day.id)
+                .map(el => el.solution);
 
-        return (
-          <AdminDay
-            key={day.revealDate + solutionsForThisDay.length}
-            day={day}
-            solutions={solutionsForThisDay}
-          />
-        );
-      })}
-      <AdminAddDay />
-    </div>
+              return (
+                <AdminDay
+                  key={day.revealDate + solutionsForThisDay.length}
+                  day={day}
+                  solutions={solutionsForThisDay}
+                />
+              );
+            })}
+            <AdminAddDay />
+          </EuiPageContentBody>
+        </EuiPageContent>
+      </EuiPageBody>
+    </EuiPage>
   );
 }
 

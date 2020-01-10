@@ -7,19 +7,22 @@ import request from "superagent";
 import "@elastic/eui/dist/eui_theme_light.css";
 
 import {
+  EuiTitle,
   EuiButton,
-  EuiCheckboxGroup,
   EuiFieldText,
   EuiForm,
   EuiTextArea,
   EuiFormRow,
+  EuiCheckbox,
   EuiDatePicker,
   EuiLink,
   EuiRange,
   EuiSelect,
   EuiSpacer,
   EuiSwitch,
-  EuiText
+  EuiText,
+  EuiRadio,
+  EuiFilePicker
 } from "@elastic/eui";
 
 import {
@@ -33,7 +36,7 @@ import {
 import styled from "styled-components";
 import { useField, Formik } from "formik";
 
-const cooperators = [
+const collaborators = [
   "Skøyerfanden",
   "Tomas",
   "Bjarte",
@@ -41,6 +44,34 @@ const cooperators = [
   "Kim",
   "Stein"
 ];
+
+const RadioButton = ({ ...props }) => {
+  const [field, meta] = useField(props);
+  return (
+    <EuiFormRow>
+      <>
+        <EuiRadio {...field} {...props} style={{ zIndex: 0 }} />
+        {meta.touched && meta.error ? (
+          <div className="error">{meta.error}</div>
+        ) : null}
+      </>
+    </EuiFormRow>
+  );
+};
+
+const CheckBox = ({ ...props }) => {
+  const [field, meta] = useField(props);
+  return (
+    <EuiFormRow>
+      <>
+        <EuiCheckbox {...field} {...props} />
+        {meta.touched && meta.error ? (
+          <div className="error">{meta.error}</div>
+        ) : null}
+      </>
+    </EuiFormRow>
+  );
+};
 
 const TextField = ({ label, ...props }) => {
   const [field, meta] = useField(props);
@@ -70,12 +101,17 @@ const TextArea = ({ label, ...props }) => {
   );
 };
 
-const DatePicker = ({ label, ...props }) => {
+const DatePicker = ({ label, setFieldValue, ...props }) => {
   const [field, meta] = useField(props);
+
+  const customOnChange = data => {
+    setFieldValue(field.name, data);
+  };
+
   return (
     <EuiFormRow label={label}>
       <>
-        <EuiDatePicker selected={field.selected} {...field} {...props} />
+        <EuiDatePicker selected={field.value} onChange={customOnChange} />
         {meta.touched && meta.error ? (
           <div className="error">{meta.error}</div>
         ) : null}
@@ -85,43 +121,10 @@ const DatePicker = ({ label, ...props }) => {
 };
 
 export function AdminEditDay({ revealDateAsString }) {
-  const [file, setFile] = useState(null);
+  // const [file, setFile] = useState(null);
   const [day, setDay] = useState({});
-
-  useEffect(() => {
-    getDayDetails(revealDateAsString).then(day => {
-      setDay(day);
-    });
-  }, [day]);
-
-  function onDrop(files) {
-    // file: files[0]
-  }
-
-  function upload() {
-    var req = request.post("/api/admin/upload/" + revealDateAsString);
-    req.query({ filename: file.name });
-    req.attach("file", file);
-
-    req.end(function(err, res) {
-      console.log("Success? ", res);
-    });
-  }
-
-  function abortUpload() {
-    // Reset state
-  }
-
-  var fileupload = (
-    <p>
-      <EuiButton onClick={upload}>Last opp</EuiButton>
-      <EuiButton onClick={abortUpload}>Avbryt opplasting</EuiButton>
-    </p>
-  );
-
-  if (!day.description) {
-    return <div>Laster</div>;
-  }
+  const [copyDescription, setDescription] = useState("");
+  const [file, setFile] = useState(null);
 
   const {
     description,
@@ -133,57 +136,149 @@ export function AdminEditDay({ revealDateAsString }) {
     solutionDate
   } = day;
 
+  useEffect(() => {
+    getDayDetails(revealDateAsString).then(day => {
+      setDay(day);
+      setDescription(day.description);
+    });
+  }, [revealDateAsString]);
+
+  function handleSubmit(values, actions) {
+    const valuesWithRealDates = {
+      ...values,
+      revealDate: values.revealDate.toDate(),
+      solutionDate: values.solutionDate.toDate()
+    };
+
+    console.log(valuesWithRealDates);
+
+    setDescription(valuesWithRealDates.description);
+
+    actions.setSubmitting(false);
+  }
+
+  // function upload() {
+  //   var req = request.post("/api/admin/upload/" + revealDateAsString);
+  //   req.query({ filename: file.name });
+  //   req.attach("file", file);
+
+  //   req.end(function(err, res) {
+  //     console.log("Success? ", res);
+  //   });
+  // }
+
+  if (!day.description) {
+    return <div>Laster</div>;
+  }
+
   return (
     <div>
+      <EuiTitle size="l">
+        <h1>Endre dag</h1>
+      </EuiTitle>
       <Formik
         initialValues={{
           description,
           link,
           solutionArtist,
           solutionSong,
-          revealDateAsString,
           optionalSolutionVideo,
-          revealDate,
-          solutionDate
+          revealDate: moment(revealDate),
+          solutionDate: moment(solutionDate)
         }}
-        onSubmit={(values, actions) => {
-          setTimeout(() => {
-            alert(JSON.stringify(values, null, 2));
-            actions.setSubmitting(false);
-          }, 1000);
-        }}
-        render={props => (
-          <EuiForm onSubmit={props.handleSubmit}>
-            <TextField
-              name="revealDateAsString"
-              type="text"
-              label="Åpningsdato"
-            />
-            <TextArea name="description" type="text" label="Beskrivelse" />
-            <TextField
-              name="solutionArtist"
-              type="text"
-              label="Artist/Gruppe"
-            />
-            <TextField name="solutionSong" type="text" label="Sang" />
-            <TextField
-              name="optionalSolutionVideo"
-              type="text"
-              label="Løsningsvideo"
-            />
-            <TextField name="link" type="text" label="Link" />
-            <DatePicker name="revealDate" type="text" label="Luke åpner" />
-            <DatePicker name="solutionDate" type="text" label="Løsningsdato" />
-            <TextField
-              name="difficulty"
-              type="text"
-              label="Vanskelighetsgrad"
-            />
-            <TextField name="cooperator" type="text" label="Bidragsyter" />
-            <EuiButton type="submit">Lagre</EuiButton>
-          </EuiForm>
+        onSubmit={handleSubmit}
+      >
+        {props => (
+          <form onSubmit={props.handleSubmit}>
+            <EuiForm>
+              <TextArea name="description" type="text" label="Beskrivelse" />
+              <div
+                style={{ maxWidth: "25rem" }}
+                dangerouslySetInnerHTML={{ __html: copyDescription }}
+              ></div>
+
+              <TextField
+                name="solutionArtist"
+                type="text"
+                label="Artist/Gruppe"
+              />
+              <TextField name="solutionSong" type="text" label="Sang" />
+
+              <EuiFilePicker
+                id="asdf2"
+                initialPromptText="Velg eller dra inn filer"
+                onChange={files => {
+                  setFile(files[0]);
+                }}
+                display="large"
+              />
+
+              {file && (
+                <EuiButton onClick={() => console.log(file)}>
+                  Last opp
+                </EuiButton>
+              )}
+
+              <TextField
+                name="optionalSolutionVideo"
+                type="text"
+                label="Løsningsvideo"
+              />
+              <TextField name="link" type="text" label="Link" />
+              <DatePicker
+                name="revealDate"
+                type="text"
+                label="Luke åpner"
+                setFieldValue={props.setFieldValue}
+              />
+              <DatePicker
+                name="solutionDate"
+                type="text"
+                label="Løsningsdato"
+                setFieldValue={props.setFieldValue}
+              />
+
+              <EuiFormRow label="Vanskelighetsgrad" labelType="legend">
+                <>
+                  <RadioButton
+                    name="difficulty"
+                    id="difficulty3"
+                    value="3"
+                    label="Vanskelig"
+                  />
+                  <EuiSpacer size="m" />
+                  <RadioButton
+                    name="difficulty"
+                    id="difficulty2"
+                    value="2"
+                    label="Middels"
+                  />
+                  <EuiSpacer size="m" />
+                  <RadioButton
+                    name="difficulty"
+                    id="difficulty1"
+                    value="1"
+                    label="Enkel"
+                  />
+                  <EuiFormRow label="Vanskelighetsgrad" labelType="legend">
+                    <>
+                      {collaborators.map(name => (
+                        <RadioButton
+                          name="cooperator"
+                          id={name}
+                          value={name}
+                          label={name}
+                        />
+                      ))}
+                    </>
+                  </EuiFormRow>
+                </>
+              </EuiFormRow>
+              <EuiButton type="submit">Lagre</EuiButton>
+            </EuiForm>
+          </form>
         )}
-      />
+      </Formik>
     </div>
   );
 }
