@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { array } from "prop-types";
 import moment from "moment";
-import { DateHeader } from "../DateHeader";
 import request from "superagent";
 
 import "@elastic/eui/dist/eui_theme_light.css";
@@ -13,14 +11,8 @@ import {
   EuiForm,
   EuiTextArea,
   EuiFormRow,
-  EuiCheckbox,
   EuiDatePicker,
-  EuiLink,
-  EuiRange,
-  EuiSelect,
   EuiSpacer,
-  EuiSwitch,
-  EuiText,
   EuiRadio,
   EuiFilePicker
 } from "@elastic/eui";
@@ -42,7 +34,8 @@ const collaborators = [
   "Bjarte",
   "Tobias",
   "Kim",
-  "Stein"
+  "Stein",
+  "Annen"
 ];
 
 const RadioButton = ({ ...props }) => {
@@ -51,20 +44,6 @@ const RadioButton = ({ ...props }) => {
     <EuiFormRow>
       <>
         <EuiRadio {...field} {...props} style={{ zIndex: 0 }} />
-        {meta.touched && meta.error ? (
-          <div className="error">{meta.error}</div>
-        ) : null}
-      </>
-    </EuiFormRow>
-  );
-};
-
-const CheckBox = ({ ...props }) => {
-  const [field, meta] = useField(props);
-  return (
-    <EuiFormRow>
-      <>
-        <EuiCheckbox {...field} {...props} />
         {meta.touched && meta.error ? (
           <div className="error">{meta.error}</div>
         ) : null}
@@ -121,7 +100,6 @@ const DatePicker = ({ label, setFieldValue, ...props }) => {
 };
 
 export function AdminEditDay({ revealDateAsString }) {
-  // const [file, setFile] = useState(null);
   const [day, setDay] = useState({});
   const [copyDescription, setDescription] = useState("");
   const [file, setFile] = useState(null);
@@ -150,22 +128,21 @@ export function AdminEditDay({ revealDateAsString }) {
       solutionDate: values.solutionDate.toDate()
     };
 
-    console.log(valuesWithRealDates);
-
     setDescription(valuesWithRealDates.description);
 
     actions.setSubmitting(false);
+    updateDay(valuesWithRealDates);
   }
 
-  // function upload() {
-  //   var req = request.post("/api/admin/upload/" + revealDateAsString);
-  //   req.query({ filename: file.name });
-  //   req.attach("file", file);
+  function upload() {
+    var req = request.post("/api/admin/upload/" + revealDateAsString);
+    req.query({ filename: file.name });
+    req.attach("file", file);
 
-  //   req.end(function(err, res) {
-  //     console.log("Success? ", res);
-  //   });
-  // }
+    req.end(function(err, res) {
+      console.log("Success? ", res);
+    });
+  }
 
   if (!day.description) {
     return <div>Laster</div>;
@@ -213,11 +190,7 @@ export function AdminEditDay({ revealDateAsString }) {
                 display="large"
               />
 
-              {file && (
-                <EuiButton onClick={() => console.log(file)}>
-                  Last opp
-                </EuiButton>
-              )}
+              {file && <EuiButton onClick={upload}>Last opp</EuiButton>}
 
               <TextField
                 name="optionalSolutionVideo"
