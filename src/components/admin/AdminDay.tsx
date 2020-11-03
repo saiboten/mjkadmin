@@ -1,23 +1,29 @@
 import React, { useState } from "react";
 import { AdminEditDay } from "./AdminEditDay";
 
-import { EuiTitle } from "@elastic/eui";
+import { EuiButton, EuiTitle } from "@elastic/eui";
 
-export function AdminDay(props) {
+interface Props {
+  day: any;
+  solutions: any;
+}
+
+export function AdminDay(props: Props) {
   const { day, solutions } = props;
 
-  const [edit, setEdit] = useState(true);
+  const [edit, setEdit] = useState(false);
 
-  function createMarkup(markup) {
+  function createMarkup(markup: string) {
     return { __html: markup };
   }
 
   if (edit) {
     return (
       <AdminEditDay
+        editDone={() => setEdit(false)}
         key={day.id}
         revealDateAsString={day.revealDateAsString}
-        close={() => setEdit(false)}
+        solutions={solutions}
       />
     );
   }
@@ -27,7 +33,7 @@ export function AdminDay(props) {
   return (
     <div
       style={{
-        backgroundColor: done ? "white" : "#ffbbbb"
+        backgroundColor: done ? "white" : "#ffbbbb",
       }}
     >
       <EuiTitle size="l">
@@ -37,7 +43,7 @@ export function AdminDay(props) {
         {day.solutionArtist} - {day.solutionSong}
       </p>
       <p dangerouslySetInnerHTML={createMarkup(day.description)}></p>
-      <button onClick={() => setEdit(true)}>Utvid</button>
+      <EuiButton onClick={() => setEdit(true)}>Utvid</EuiButton>
     </div>
   );
 }

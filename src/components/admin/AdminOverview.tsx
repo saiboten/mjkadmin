@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import {
+  EuiButton,
   EuiPage,
   EuiPageBody,
   EuiPageContent,
@@ -9,17 +10,28 @@ import {
   EuiPageContentHeaderSection,
   EuiPageHeader,
   EuiPageHeaderSection,
-  EuiTitle
+  EuiSpacer,
+  EuiTitle,
 } from "@elastic/eui";
 
 import AdminAddDay from "./AdminAddDay";
 
-import { fetchAdminData } from "../../api/adminApi";
+import { deleteDay, fetchAdminData } from "../../api/adminApi";
 import { AdminDay } from "./AdminDay";
 
+interface Day {
+  id: string;
+  revealDate: string;
+}
+
+interface Solution {
+  day: string;
+  solution: string;
+}
+
 function AdminOverview() {
-  const [days, setDays] = useState([]);
-  const [solutions, setSolutions] = useState([]);
+  const [days, setDays] = useState<Day[]>([]);
+  const [solutions, setSolutions] = useState<Solution[]>([]);
 
   useEffect(() => {
     fetchAdminData().then(({ days, solutions }) => {
@@ -27,6 +39,15 @@ function AdminOverview() {
       setSolutions(solutions);
     });
   }, [setDays, setSolutions]);
+
+  function deleteAndRefetch(id: string) {
+    deleteDay(id).then(() => {
+      fetchAdminData().then(({ days, solutions }) => {
+        setDays(days);
+        setSolutions(solutions);
+      });
+    });
+  }
 
   return (
     <EuiPage>
@@ -49,15 +70,19 @@ function AdminOverview() {
           <EuiPageContentBody>
             {days.map((day, i) => {
               var solutionsForThisDay = solutions
-                .filter(solution => solution.day === day.id)
-                .map(el => el.solution);
+                .filter((solution) => solution.day === day.id)
+                .map((el) => el.solution);
 
               return (
-                <AdminDay
+                <React.Fragment
                   key={day.revealDate + solutionsForThisDay.length}
-                  day={day}
-                  solutions={solutionsForThisDay}
-                />
+                >
+                  <AdminDay day={day} solutions={solutionsForThisDay} />
+                  <EuiSpacer size="m" />
+                  <EuiButton onClick={() => deleteAndRefetch(day.id)}>
+                    Delete
+                  </EuiButton>
+                </React.Fragment>
               );
             })}
             <AdminAddDay />

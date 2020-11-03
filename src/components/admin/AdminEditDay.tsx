@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import moment from "moment";
 import request from "superagent";
 
 import "@elastic/eui/dist/eui_theme_light.css";
@@ -14,7 +13,10 @@ import {
   EuiDatePicker,
   EuiSpacer,
   EuiRadio,
-  EuiFilePicker
+  EuiFilePicker,
+  EuiListGroupItem,
+  EuiListGroup,
+  EuiPanel,
 } from "@elastic/eui";
 
 import {
@@ -23,10 +25,14 @@ import {
   fetchAdminData,
   addSolution,
   deleteSolution,
-  getDayDetails
+  getDayDetails,
 } from "../../api/adminApi";
 import styled from "styled-components";
 import { useField, Formik } from "formik";
+
+import moment from "moment";
+import { DayType } from "../../types";
+import { AddSolution } from "./AddSolution";
 
 const collaborators = [
   "Skøyerfanden",
@@ -35,15 +41,19 @@ const collaborators = [
   "Tobias",
   "Kim",
   "Stein",
-  "Annen"
+  "Annen",
 ];
 
-const RadioButton = ({ ...props }) => {
-  const [field, meta] = useField(props);
+const RadioButton = ({ ...props }: any) => {
+  const [field, meta] = useField({
+    ...props,
+    type: "radio",
+  });
+
   return (
     <EuiFormRow>
       <>
-        <EuiRadio {...field} {...props} style={{ zIndex: 0 }} />
+        <EuiRadio {...field} {...props} type="radio" style={{ zIndex: 0 }} />
         {meta.touched && meta.error ? (
           <div className="error">{meta.error}</div>
         ) : null}
@@ -52,8 +62,9 @@ const RadioButton = ({ ...props }) => {
   );
 };
 
-const TextField = ({ label, ...props }) => {
-  const [field, meta] = useField(props);
+const TextField = ({ label, ...props }: any) => {
+  const [field, meta] = useField({ ...props, type: "text" });
+
   return (
     <EuiFormRow label={label}>
       <>
@@ -66,7 +77,7 @@ const TextField = ({ label, ...props }) => {
   );
 };
 
-const TextArea = ({ label, ...props }) => {
+const TextArea = ({ label, ...props }: any) => {
   const [field, meta] = useField(props);
   return (
     <EuiFormRow label={label}>
@@ -80,10 +91,10 @@ const TextArea = ({ label, ...props }) => {
   );
 };
 
-const DatePicker = ({ label, setFieldValue, ...props }) => {
+const DatePicker = ({ label, setFieldValue, ...props }: any) => {
   const [field, meta] = useField(props);
 
-  const customOnChange = data => {
+  const customOnChange = (data: any) => {
     setFieldValue(field.name, data);
   };
 
@@ -99,54 +110,58 @@ const DatePicker = ({ label, setFieldValue, ...props }) => {
   );
 };
 
-export function AdminEditDay({ revealDateAsString }) {
-  const [day, setDay] = useState({});
-  const [copyDescription, setDescription] = useState("");
-  const [file, setFile] = useState(null);
+interface Props {
+  revealDateAsString: string;
+  editDone: () => void;
+  solutions: string[];
+}
 
-  const {
-    description,
-    link,
-    solutionSong,
-    solutionArtist,
-    optionalSolutionVideo,
-    revealDate,
-    solutionDate
-  } = day;
+export function AdminEditDay({
+  revealDateAsString,
+  editDone,
+  solutions,
+}: Props) {
+  const [day, setDay] = useState<DayType | undefined>();
+  const [copyDescription, setDescription] = useState("");
+  const [file, setFile] = useState<File | undefined>(undefined);
 
   useEffect(() => {
-    getDayDetails(revealDateAsString).then(day => {
+    getDayDetails(revealDateAsString).then(({ day }) => {
       setDay(day);
-      setDescription(day.description);
+      setDescription(day.description || "");
     });
   }, [revealDateAsString]);
 
-  function handleSubmit(values, actions) {
+  function handleSubmit(values: any, actions: any) {
     const valuesWithRealDates = {
       ...values,
-      revealDate: values.revealDate.toDate(),
-      solutionDate: values.solutionDate.toDate()
+      revealDate: values.revealDate.startOf("day").valueOf(),
+      solutionDate: values.solutionDate.startOf("day").valueOf(),
+      revealDateAsString: values.revealDate.startOf("day").format("yyyy-MM-DD"),
     };
 
     setDescription(valuesWithRealDates.description);
 
     actions.setSubmitting(false);
     updateDay(valuesWithRealDates);
+    editDone();
   }
 
   function upload() {
     var req = request.post("/api/admin/upload/" + revealDateAsString);
-    req.query({ filename: file.name });
-    req.attach("file", file);
+    req.query({ filename: file?.name });
+    req.attach("file", file as any);
 
-    req.end(function(err, res) {
+    req.end(function (err, res) {
       console.log("Success? ", res);
     });
   }
 
-  if (!day.description) {
+  if (!day) {
     return <div>Laster</div>;
   }
+
+  const { revealDate, solutionDate, id, difficulty } = day;
 
   return (
     <div>
@@ -155,36 +170,36 @@ export function AdminEditDay({ revealDateAsString }) {
       </EuiTitle>
       <Formik
         initialValues={{
-          description,
-          link,
-          solutionArtist,
-          solutionSong,
-          optionalSolutionVideo,
-          revealDate: moment(revealDate),
-          solutionDate: moment(solutionDate)
+          ...day,
+          difficulty: difficulty?.toString(),
+          revealDate: moment(new Date(revealDate || "")),
+          solutionDate: moment(new Date(solutionDate || "")),
         }}
         onSubmit={handleSubmit}
       >
-        {props => (
+        {(props) => (
           <form onSubmit={props.handleSubmit}>
             <EuiForm>
               <TextArea name="description" type="text" label="Beskrivelse" />
+
+              <EuiSpacer size="m" />
+
               <div
                 style={{ maxWidth: "25rem" }}
                 dangerouslySetInnerHTML={{ __html: copyDescription }}
               ></div>
 
-              <TextField
-                name="solutionArtist"
-                type="text"
-                label="Artist/Gruppe"
-              />
-              <TextField name="solutionSong" type="text" label="Sang" />
+              <EuiSpacer size="m" />
+
+              <TextField name="solutionArtist" label="Artist/Gruppe" />
+              <TextField name="solutionSong" label="Sang" />
+
+              <EuiSpacer size="m" />
 
               <EuiFilePicker
                 id="asdf2"
                 initialPromptText="Velg eller dra inn filer"
-                onChange={files => {
+                onChange={(files: any) => {
                   setFile(files[0]);
                 }}
                 display="large"
@@ -192,12 +207,8 @@ export function AdminEditDay({ revealDateAsString }) {
 
               {file && <EuiButton onClick={upload}>Last opp</EuiButton>}
 
-              <TextField
-                name="optionalSolutionVideo"
-                type="text"
-                label="Løsningsvideo"
-              />
-              <TextField name="link" type="text" label="Link" />
+              <TextField name="optionalSolutionVideo" label="Løsningsvideo" />
+              <TextField name="link" label="Link" />
               <DatePicker
                 name="revealDate"
                 type="text"
@@ -233,9 +244,9 @@ export function AdminEditDay({ revealDateAsString }) {
                     value="1"
                     label="Enkel"
                   />
-                  <EuiFormRow label="Vanskelighetsgrad" labelType="legend">
+                  <EuiFormRow label="Laget av" labelType="legend">
                     <>
-                      {collaborators.map(name => (
+                      {collaborators.map((name) => (
                         <RadioButton
                           name="cooperator"
                           id={name}
@@ -247,11 +258,29 @@ export function AdminEditDay({ revealDateAsString }) {
                   </EuiFormRow>
                 </>
               </EuiFormRow>
+
+              <EuiSpacer size="m" />
+
+              <EuiTitle size="l">
+                <h2>Løsninger</h2>
+              </EuiTitle>
+
+              <EuiPanel paddingSize="m">
+                <EuiListGroup>
+                  {solutions.map((el) => (
+                    <EuiListGroupItem key={el} onClick={() => {}} label={el} />
+                  ))}
+                </EuiListGroup>
+              </EuiPanel>
+
+              <EuiSpacer size="m" />
+
               <EuiButton type="submit">Lagre</EuiButton>
             </EuiForm>
           </form>
         )}
       </Formik>
+      <AddSolution id={id} />
     </div>
   );
 }
