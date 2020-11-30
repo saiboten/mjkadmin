@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import {
   EuiButton,
+  EuiFlexGroup,
   EuiPage,
   EuiPageBody,
   EuiPageContent,
@@ -16,41 +17,21 @@ import {
 
 import AdminAddDay from "./AdminAddDay";
 
-import { deleteDay, fetchAdminData } from "../../api/adminApi";
+import { deleteDay } from "../../api/adminApi";
 import { AdminDay } from "./AdminDay";
-
-interface Day {
-  id: string;
-  revealDate: string;
-}
-
-interface Solution {
-  day: string;
-  solution: string;
-}
+import { useData } from "../useData";
+import { mutate } from "swr";
 
 function AdminOverview() {
-  const [days, setDays] = useState<Day[]>([]);
-  const [solutions, setSolutions] = useState<Solution[]>([]);
+  const { data } = useData();
 
-  useEffect(() => {
-    fetchAdminData().then(({ days, solutions }) => {
-      setDays(days);
-      setSolutions(solutions);
-    });
-  }, [setDays, setSolutions]);
-
-  function deleteAndRefetch(id: string) {
-    deleteDay(id).then(() => {
-      fetchAdminData().then(({ days, solutions }) => {
-        setDays(days);
-        setSolutions(solutions);
-      });
-    });
+  async function deleteAndRefetch(id: number) {
+    await deleteDay(id);
+    mutate("data");
   }
 
   return (
-    <EuiPage>
+    <EuiPage restrictWidth>
       <EuiPageBody>
         <EuiPageHeader>
           <EuiPageHeaderSection>
@@ -59,7 +40,7 @@ function AdminOverview() {
             </EuiTitle>
           </EuiPageHeaderSection>
         </EuiPageHeader>
-        <EuiPageContent verticalPosition="center" horizontalPosition="center">
+        <EuiPageContent>
           <EuiPageContentHeader>
             <EuiPageContentHeaderSection>
               <EuiTitle>
@@ -68,8 +49,8 @@ function AdminOverview() {
             </EuiPageContentHeaderSection>
           </EuiPageContentHeader>
           <EuiPageContentBody>
-            {days.map((day, i) => {
-              var solutionsForThisDay = solutions
+            {data?.days.map((day, i) => {
+              var solutionsForThisDay = data.solutions
                 .filter((solution) => solution.day === day.id)
                 .map((el) => el.solution);
 

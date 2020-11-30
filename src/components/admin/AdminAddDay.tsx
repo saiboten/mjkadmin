@@ -15,6 +15,7 @@ import {
 } from "@elastic/eui";
 import { Formik, useField } from "formik";
 import moment from "moment";
+import { mutate } from "swr";
 
 const TextField = ({ label, ...props }: any) => {
   const [field, meta] = useField(props);
@@ -50,7 +51,7 @@ const DatePicker = ({ label, setFieldValue, ...props }: any) => {
 };
 
 function AdminAddDay() {
-  function onSubmit(values: any) {
+  async function onSubmit(values: any) {
     var saveObject = {
       link: "TODO",
       description: "TODO",
@@ -62,7 +63,8 @@ function AdminAddDay() {
       revealDateAsString: values.revealDate.startOf("day").format("yyyy-MM-DD"),
     };
 
-    addDayApi(saveObject);
+    await addDayApi(saveObject);
+    mutate("data");
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import request from "superagent";
 
 import "@elastic/eui/dist/eui_theme_light.css";
@@ -19,20 +19,14 @@ import {
   EuiPanel,
 } from "@elastic/eui";
 
-import {
-  updateDay,
-  deleteDay,
-  fetchAdminData,
-  addSolution,
-  deleteSolution,
-  getDayDetails,
-} from "../../api/adminApi";
-import styled from "styled-components";
+import { updateDay, deleteSolution } from "../../api/adminApi";
 import { useField, Formik } from "formik";
 
 import moment from "moment";
-import { DayType } from "../../types";
 import { AddSolution } from "./AddSolution";
+import SongAudio from "./SongAudio";
+import { mutate } from "swr";
+import { useDay } from "../useDay";
 
 const collaborators = [
   "Skøyerfanden",
@@ -121,18 +115,19 @@ export function AdminEditDay({
   editDone,
   solutions,
 }: Props) {
-  const [day, setDay] = useState<DayType | undefined>();
   const [copyDescription, setDescription] = useState("");
   const [file, setFile] = useState<File | undefined>(undefined);
+  const { data } = useDay(revealDateAsString);
 
-  useEffect(() => {
-    getDayDetails(revealDateAsString).then(({ day }) => {
-      setDay(day);
-      setDescription(day.description || "");
-    });
-  }, [revealDateAsString]);
+  if (!data) {
+    return <div>"Loading.."</div>;
+  }
 
-  function handleSubmit(values: any, actions: any) {
+  const { day } = data;
+
+  console.log("Raw data from day: ", day.description);
+
+  async function handleSubmit(values: any, actions: any) {
     const valuesWithRealDates = {
       ...values,
       revealDate: values.revealDate.startOf("day").valueOf(),
@@ -143,17 +138,24 @@ export function AdminEditDay({
     setDescription(valuesWithRealDates.description);
 
     actions.setSubmitting(false);
-    updateDay(valuesWithRealDates);
+    await updateDay(valuesWithRealDates);
+    console.log("Updating day");
+
     editDone();
+    mutate("data");
+    mutate(`day/${revealDateAsString}`);
+    console.log(`day/${revealDateAsString}`);
   }
 
-  function upload() {
+  async function upload() {
     var req = request.post("/api/admin/upload/" + revealDateAsString);
     req.query({ filename: file?.name });
     req.attach("file", file as any);
 
     req.end(function (err, res) {
       console.log("Success? ", res);
+      mutate(`day/${revealDateAsString}`);
+      mutate("data");
     });
   }
 
@@ -169,6 +171,7 @@ export function AdminEditDay({
         <h1>Endre dag</h1>
       </EuiTitle>
       <Formik
+        enableReinitialize
         initialValues={{
           ...day,
           difficulty: difficulty?.toString(),
@@ -206,6 +209,8 @@ export function AdminEditDay({
               />
 
               {file && <EuiButton onClick={upload}>Last opp</EuiButton>}
+
+              {day.link && <SongAudio link={day.link} />}
 
               <TextField name="optionalSolutionVideo" label="Løsningsvideo" />
               <TextField name="link" label="Link" />
@@ -268,7 +273,18 @@ export function AdminEditDay({
               <EuiPanel paddingSize="m">
                 <EuiListGroup>
                   {solutions.map((el) => (
-                    <EuiListGroupItem key={el} onClick={() => {}} label={el} />
+                    <React.Fragment key={el}>
+                      <EuiListGroupItem label={el} />
+
+                      <EuiButton
+                        onClick={async () => {
+                          await deleteSolution(id, el);
+                          mutate("data");
+                        }}
+                      >
+                        Slett
+                      </EuiButton>
+                    </React.Fragment>
                   ))}
                 </EuiListGroup>
               </EuiPanel>

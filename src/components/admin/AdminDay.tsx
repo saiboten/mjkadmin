@@ -10,7 +10,6 @@ interface Props {
 
 export function AdminDay(props: Props) {
   const { day, solutions } = props;
-
   const [edit, setEdit] = useState(false);
 
   function createMarkup(markup: string) {

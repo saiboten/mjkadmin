@@ -8,12 +8,16 @@ export const fetchAdminData = () => {
     .then((data) => data);
 };
 
-interface DayResponse {
+export type DayResponse = {
   day: DayType;
-}
+};
 
-export const getDayDetails = async (revealDate: string): Promise<DayResponse> => {
-  return fetch(`${process.env.REACT_APP_API_PATH}/admin/day/${revealDate}.json`)
+export const getDayDetails = async (
+  revealDateAsString: string
+): Promise<DayResponse> => {
+  return fetch(
+    `${process.env.REACT_APP_API_PATH}/admin/${revealDateAsString}.json`
+  )
     .then((data) => {
       return data.json();
     })
@@ -54,7 +58,7 @@ export const addSolution = (day: number, solution: string) => {
     .then((data) => data);
 };
 
-export const deleteSolution = (day: string, solution: string) => {
+export const deleteSolution = (day: number, solution: string) => {
   return fetch(
     `${
       process.env.REACT_APP_API_PATH
@@ -89,7 +93,7 @@ export const addDay = (data: any) => {
     .then((data) => data);
 };
 
-export const deleteDay = (day: string) => {
+export const deleteDay = (day: number) => {
   return fetch(`${process.env.REACT_APP_API_PATH}/admin/day/${day}`, {
     method: "DELETE",
     headers: {
